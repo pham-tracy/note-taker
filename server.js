@@ -15,10 +15,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+// Homepage
 app.get("/", (req, res) =>
   res.sendFile(path.join(__dirname, "public/index.html"))
 );
 
+// Notes page
 app.get("/notes", (req, res) =>
   res.sendFile(path.join(__dirname, "public/notes.html"))
 );
@@ -28,6 +30,7 @@ app.get("/api/notes", (req, res) =>
   readFromFile("./db/db.json").then((data) => res.json(JSON.parse(data)))
 );
 
+// API post request for adding a new note
 app.post("/api/notes", (req, res) => {
   console.log(req.body);
 
@@ -47,17 +50,17 @@ app.post("/api/notes", (req, res) => {
       if (err) {
         console.error(err);
       } else {
-        // converts string to JSON
+        // converts string data to JSON
         const parsedNotes = JSON.parse(data);
 
-        // Add a new review
+        // Adds new note
         parsedNotes.push(newNote);
 
         // Adds updated notes back to db file
         fs.writeFile("./db/db.json", JSON.stringify(parsedNotes), (writeErr) =>
           writeErr
             ? console.error(writeErr)
-            : console.info("Succesfully updated notes!")
+            : console.info("Succesfully added note!")
         );
       }
     });
@@ -74,27 +77,30 @@ app.post("/api/notes", (req, res) => {
   }
 });
 
-// const writeToFile = (destination, content) =>
-//   fs.writeFile(destination, JSON.stringify(content, null, 4), (err) =>
-//     err ? console.error(err) : console.info(`\nData written to ${destination}`)
-//   );
+// Helper code to delete notes
+const writeToFile = (destination, content) =>
+  fs.writeFile(destination, JSON.stringify(content), (err) =>
+    err ? console.error(err) : console.info(`\Successfully deleted note!`)
+  );
 
-// app.delete("/api/notes/:id", (req, res) => {
-//   const noteID = req.params.note_id;
-//   readFromFile("./db/db.json")
-//     .then((data) => JSON.parse(data))
-//     .then((json) => {
-//       // Make a new array of all tips except the one with the ID provided in the URL
-//       const result = json.filter((note) => note.note_id !== noteID);
-//       console.log(result);
-//       // Save that array to the filesystem
-//       writeToFile("./db/db.json", result);
+// API delete request for notes
+app.delete("/api/notes/:id", (req, res) => {
+  const noteID = req.params.id;
+  readFromFile("./db/db.json")
+    .then((data) => JSON.parse(data))
+    .then((json) => {
+      // Filters through the notes and makes a new array of all notes except the one with the selected ID
+      const result = json.filter((note) => note.id !== noteID);
+      console.log(result);
+      // Saves new array to the db file
+      writeToFile("./db/db.json", result);
 
-//       // Respond to the DELETE request
-//       res.json(`Item ${noteID} has been deleted 🗑️`);
-//     });
-// });
+      // Responds to the delete request
+      res.json(`Note ID ${noteID} has been deleted`);
+    });
+});
 
+// Wildcard route
 app.get("*", (req, res) =>
   res.sendFile(path.join(__dirname, "public/index.html"))
 );
