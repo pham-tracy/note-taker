@@ -27,7 +27,7 @@ Install NPM packages:
 
 Run the following command in your command line interface to start the application:
 
-    node index.js
+    node server.js
 
 ## Usage
 
